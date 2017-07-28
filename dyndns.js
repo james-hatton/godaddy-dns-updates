@@ -1,7 +1,6 @@
 var https = require("https");
 var http = require("http");
 
-
 //your domain
 var domain = '';
 
