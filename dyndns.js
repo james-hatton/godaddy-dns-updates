@@ -92,4 +92,8 @@ function doUpdateDnsEntries(dnsIp, recordName) {
 		updateDns.write(asJson);
 		updateDns.end();
 	}
+	else
+	{
+		console.log("Not updating, ips the same");
+	}
 }
