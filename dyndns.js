@@ -2,15 +2,15 @@ var https = require("https");
 var http = require("http");
 
 //your domain
-var domain = '';
+var domain = '{yourdomain}';
 
 //a records to update
-var aRecordName = [''];
+var aRecordName = [{yourarecords}];
 
 //your key
-var key = '';
+var key = '{yourgodaddyapikey}';
 //your secret
-var secret = '';
+var secret = '{yourgodaddysecret}';
 
 //get the local ip address
 var myIp = '';
