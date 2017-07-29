@@ -12,56 +12,75 @@ var key = '{yourgodaddyapikey}';
 //your secret
 var secret = '{yourgodaddysecret}';
 
-//get the local ip address
-var myIp = '';
-var myIpRequestOptions = {
-	host: 'ipinfo.io',
-	path: '/json',
-	method: 'GET'
-};
-var myIpRequest = http.request(myIpRequestOptions, function (response) {
-	response.on('data', function (chunk) {
-		myIp += chunk;
-	})
-	response.on('end', function () {
-		var parsed = JSON.parse(myIp);
-		myIp = parsed.ip;
-		console.log("Found ip, currently: " + myIp);
 
-		for (var index = 0; index < aRecordName.length; index++) {
-			doGetDnsResponseFromGoDaddy(aRecordName[index]);
-		}
-	});
-});
-myIpRequest.end();
+requestIpFromIpInfo();
 
-
-function doGetDnsResponseFromGoDaddy(recordName){
-var dnsIP = '';
-var optionsForDnsGetQueries = {
-	host: 'api.godaddy.com',
-	path: '/v1/domains/' + domain + '/records/A/' + recordName,
-	method: 'GET',
-	headers: {
-		'Authorization': 'sso-key ' + key + ':' + secret
+function isIpOk(ipData) {
+	if (ipData.ip != '' && ipData != null) {
+		return true;
 	}
-};
-var dnsGetFromGoDaddy = https.request(optionsForDnsGetQueries, function (response) {
-	response.on('end', function () {
-		console.log("Current dns record from GoDaddy: "+ dnsIP);
-		var data = JSON.parse(dnsIP);
-		doUpdateDnsEntries(data[0].data, recordName);
+	return false;
+}
+function requestIpFromIpInfo() {
+	var myIp = '';
+	var myIpRequestOptions = {
+		host: 'ipinfo.io',
+		path: '/json',
+		method: 'GET'
+	};
+
+	//callback
+	callback = function (response) {
+		response.on('data', function (chunk) {
+			myIp += chunk;
+		})
+		response.on('end', function () {
+			let parsed = JSON.parse(myIp);
+			myIp = parsed.ip;
+			if (isIpOk(parsed)) {
+				console.log("Found ip, currently: " + myIp);
+
+				for (var index = 0; index < aRecordName.length; index++) {
+					doGetDnsResponseFromGoDaddy(aRecordName[index], myIp);
+				}
+			}
+			else {
+				requestIpFromIpInfo();
+			}
+		});
+	}
+
+
+
+	var request = http.request(myIpRequestOptions, callback);
+	request.end();
+}
+function doGetDnsResponseFromGoDaddy(recordName, myIp) {
+	var dnsIP = '';
+	var optionsForDnsGetQueries = {
+		host: 'api.godaddy.com',
+		path: '/v1/domains/' + domain + '/records/A/' + recordName,
+		method: 'GET',
+		headers: {
+			'Authorization': 'sso-key ' + key + ':' + secret
+		}
+	};
+	var dnsGetFromGoDaddy = https.request(optionsForDnsGetQueries, function (response) {
+		response.on('end', function () {
+			console.log("Current dns record from GoDaddy: " + dnsIP);
+			var data = JSON.parse(dnsIP);
+			doUpdateDnsEntries(myIp,data[0].data, recordName);
+		});
+		response.on('data', function (chunk) {
+			dnsIP += chunk;
+		})
 	});
-	response.on('data', function (chunk) {
-		dnsIP += chunk;
-	})
-});
-dnsGetFromGoDaddy.end();
+	dnsGetFromGoDaddy.end();
 }
 
 
-function doUpdateDnsEntries(dnsIp, recordName) {
-	if (myIp != dnsIp) {
+function doUpdateDnsEntries(myIp,dnsIp, recordName) {
+	if (myIp != dnsIp && myIp != '') {
 		//then update
 		var request = {};
 		request.ttl = 3700;
@@ -86,14 +105,13 @@ function doUpdateDnsEntries(dnsIp, recordName) {
 			});
 			response.on('error', function (e) { console.log(e); });
 			response.on('end', function () {
-				
+
 			});
 		});
 		updateDns.write(asJson);
 		updateDns.end();
 	}
-	else
-	{
+	else {
 		console.log("Not updating, ips the same");
 	}
 }
