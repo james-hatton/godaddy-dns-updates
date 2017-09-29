@@ -35,6 +35,7 @@ function requestIpFromIpInfo() {
 			myIp += chunk;
 		})
 		response.on('end', function () {
+			"use strict";
 			let parsed = JSON.parse(myIp);
 			myIp = parsed.ip;
 			if (isIpOk(parsed)) {
