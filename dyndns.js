@@ -88,7 +88,7 @@ function doUpdateDnsEntries(myIp,dnsIp, recordName) {
 		request.data = myIp;
 
 		var asJson = JSON.stringify(request);
-
+		console.log("Updating ip. " + asJson);
 		var optionsForDnsUpdateQuery = {
 			host: 'api.godaddy.com',
 			path: '/v1/domains/' + domain + '/records/A/' + recordName,
