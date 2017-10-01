@@ -99,6 +99,9 @@ function doUpdateDnsEntries(myIp,dnsIp, recordName) {
 			}
 		};
 		var updateResponse = '';
+		console.log("To: " + optionsForDnsUpdateQuery.path);
+console.log("Headers: " + optionsForDnsUpdateQuery.headers["Authorization"]);
+
 		var updateDns = https.request(optionsForDnsUpdateQuery, function (response) {
 
 			response.on('data', function (chunk) {
