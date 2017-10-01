@@ -95,8 +95,10 @@ function doUpdateDnsEntries(myIp,dnsIp, recordName) {
 			method: 'PUT',
 			headers: {
 				'Authorization': 'sso-key ' + key + ':' + secret,
-				'Content-Type': 'application/json'
-			}
+				'Content-Type': 'application/json',
+				'Content-length': asJson.length
+			},
+			body: asJson
 		};
 		var updateResponse = '';
 		console.log("To: " + optionsForDnsUpdateQuery.path);
